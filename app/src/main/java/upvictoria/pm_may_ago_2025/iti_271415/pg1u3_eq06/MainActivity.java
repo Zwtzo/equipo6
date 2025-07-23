@@ -28,24 +28,46 @@ public class MainActivity extends AppCompatActivity {
         loadModel();
 
         arFragment.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
-            if (carRenderable == null || carNode != null) return; // Ya fue colocado
+            if (carRenderable == null) return;
 
-            Anchor anchor = hitResult.createAnchor();
-            AnchorNode anchorNode = new AnchorNode(anchor);
-            anchorNode.setParent(arFragment.getArSceneView().getScene());
+            Anchor newAnchor = hitResult.createAnchor();
 
-            carNode = new TransformableNode(arFragment.getTransformationSystem());
-            carNode.setParent(anchorNode);
-            carNode.setRenderable(carRenderable);
+            if (carNode == null) {
+                // 🚗 Primera vez: colocamos el carrito
+                AnchorNode anchorNode = new AnchorNode(newAnchor);
+                anchorNode.setParent(arFragment.getArSceneView().getScene());
 
-            carNode.getScaleController().setMinScale(0.05f);
-            carNode.getScaleController().setMaxScale(0.06f); // debe ser mayor que el mínimo
-            carNode.setLocalScale(new Vector3(0.05f, 0.05f, 0.05f));
+                carNode = new TransformableNode(arFragment.getTransformationSystem());
+                carNode.setParent(anchorNode);
+                carNode.setRenderable(carRenderable);
 
-            carNode.select();
+                carNode.getScaleController().setMinScale(0.05f);
+                carNode.getScaleController().setMaxScale(0.06f);
+                carNode.setLocalScale(new Vector3(0.05f, 0.05f, 0.05f));
 
-            Log.d("AR", "Carro colocado");
+                carNode.select();
+
+                Log.d("AR", "Carro colocado por primera vez");
+            } else {
+                // 🔄 Teletransportar el modelo
+                AnchorNode newAnchorNode = new AnchorNode(newAnchor);
+                newAnchorNode.setParent(arFragment.getArSceneView().getScene());
+
+                // Eliminamos el nodo anterior de la escena
+                AnchorNode oldAnchorNode = (AnchorNode) carNode.getParent();
+                if (oldAnchorNode != null) {
+                    oldAnchorNode.setParent(null);
+                }
+
+                // Reasignamos el carrito al nuevo anchor
+                carNode.setParent(newAnchorNode);
+                carNode.select();
+
+                Log.d("AR", "Carro teletransportado a nueva posición");
+            }
+
         });
+
 
 
         JoystickView joystick = findViewById(R.id.joystick);
