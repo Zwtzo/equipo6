@@ -8,6 +8,7 @@ import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 import com.google.ar.sceneform.math.Vector3;
 import android.net.Uri;
+import android.util.Log;
 
 import android.view.MotionEvent;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         loadModel();
 
         arFragment.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
-            if (carRenderable == null) return;
+            if (carRenderable == null || carNode != null) return; // Ya fue colocado
 
             Anchor anchor = hitResult.createAnchor();
             AnchorNode anchorNode = new AnchorNode(anchor);
@@ -36,23 +37,30 @@ public class MainActivity extends AppCompatActivity {
             carNode = new TransformableNode(arFragment.getTransformationSystem());
             carNode.setParent(anchorNode);
             carNode.setRenderable(carRenderable);
+
+            carNode.getScaleController().setMinScale(0.05f);
+            carNode.getScaleController().setMaxScale(0.06f); // debe ser mayor que el mínimo
+            carNode.setLocalScale(new Vector3(0.05f, 0.05f, 0.05f));
+
             carNode.select();
+
+            Log.d("AR", "Carro colocado");
         });
+
 
         JoystickView joystick = findViewById(R.id.joystick);
         joystick.setJoystickListener((x, y) -> {
             if (carNode != null) {
                 Vector3 currentPosition = carNode.getLocalPosition();
-                float dx = x * 0.05f;
-                float dz = -y * 0.05f; // -y porque normalmente arriba en el joystick es "adelante"
                 Vector3 newPosition = new Vector3(
-                        currentPosition.x + dx,
+                        currentPosition.x + x * 0.05f,
                         currentPosition.y,
-                        currentPosition.z + dz
+                        currentPosition.z - y * 0.05f
                 );
                 carNode.setLocalPosition(newPosition);
             }
         });
+
     }
 
     private void loadModel() {
