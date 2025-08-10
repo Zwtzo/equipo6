@@ -69,7 +69,7 @@ public class JoystickView extends View {
         if (listener != null) {
             float xPercent = (touchX - centerX) / maxRadius;
             float yPercent = (touchY - centerY) / maxRadius;
-            listener.onJoystickMoved(xPercent, yPercent);
+            listener.onJoystickMoved(-xPercent, -yPercent);
         }
 
         if (e.getAction() == MotionEvent.ACTION_UP) {

@@ -14,20 +14,54 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-
-    <Button
-        android:id="@+id/btn_select_model"
+    <!-- Cruceta (D-pad) -->
+    <LinearLayout
+        android:id="@+id/dpad_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Elegir modelo"
-        android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="16dp" />
-
-    <!-- Joystick -->
-    <upvictoria.pm_may_ago_2025.iti_271415.pg1u3_eq06.JoystickView
-        android:id="@+id/joystick"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
+        android:orientation="vertical"
+        android:gravity="center"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="24dp" />
+        android:layout_marginBottom="24dp">
+
+        <!-- Arriba -->
+        <Button
+            android:id="@+id/btn_up"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:text="↑" />
+
+        <!-- Izquierda y Derecha -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btn_left"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:text="←" />
+
+            <Space
+                android:layout_width="16dp"
+                android:layout_height="16dp" />
+
+            <Button
+                android:id="@+id/btn_right"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:text="→" />
+        </LinearLayout>
+
+        <!-- Abajo -->
+        <Button
+            android:id="@+id/btn_down"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:text="↓" />
+
+    </LinearLayout>
+
 </FrameLayout>
