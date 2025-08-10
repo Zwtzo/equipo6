@@ -10,7 +10,6 @@ import com.google.ar.sceneform.math.Vector3;
 import android.net.Uri;
 import android.util.Log;
 
-import android.view.MotionEvent;
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.Toast;
@@ -21,13 +20,16 @@ public class MainActivity extends AppCompatActivity {
     private ArFragment arFragment;
     private ModelRenderable carRenderable;
     private TransformableNode carNode;
+    private CarController controller;               // ← controlador de movimiento
     private String selectedModel = "car_model.glb"; // por defecto
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ar_fragment);
+
         Button selectModelButton = findViewById(R.id.btn_select_model);
         selectModelButton.setOnClickListener(v -> showModelPicker());
 
@@ -50,8 +52,10 @@ public class MainActivity extends AppCompatActivity {
                 carNode.getScaleController().setMinScale(0.05f);
                 carNode.getScaleController().setMaxScale(0.06f);
                 carNode.setLocalScale(new Vector3(0.05f, 0.05f, 0.05f));
-
                 carNode.select();
+
+                // 🔧 Inicializar el controlador con el nodo del carro
+                controller = new CarController(carNode);
 
                 Log.d("AR", "Carro colocado por primera vez");
             } else {
@@ -59,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 AnchorNode newAnchorNode = new AnchorNode(newAnchor);
                 newAnchorNode.setParent(arFragment.getArSceneView().getScene());
 
-                // Eliminamos el nodo anterior de la escena
+                // Quitamos el padre anterior
                 AnchorNode oldAnchorNode = (AnchorNode) carNode.getParent();
                 if (oldAnchorNode != null) {
                     oldAnchorNode.setParent(null);
@@ -69,26 +73,20 @@ public class MainActivity extends AppCompatActivity {
                 carNode.setParent(newAnchorNode);
                 carNode.select();
 
+                // ⚙️ Asegurar que el controlador siga apuntando al mismo nodo
+                if (controller != null) controller.updateNode(carNode);
+
                 Log.d("AR", "Carro teletransportado a nueva posición");
             }
-
         });
 
-
-
+        // 🎮 Joystick: delega todo al CarController (rotación suave + avance)
         JoystickView joystick = findViewById(R.id.joystick);
         joystick.setJoystickListener((x, y) -> {
-            if (carNode != null) {
-                Vector3 currentPosition = carNode.getLocalPosition();
-                Vector3 newPosition = new Vector3(
-                        currentPosition.x + x * 0.05f,
-                        currentPosition.y,
-                        currentPosition.z - y * 0.05f
-                );
-                carNode.setLocalPosition(newPosition);
+            if (controller != null) {
+                controller.move(x, y);
             }
         });
-
     }
 
     private void showModelPicker() {
@@ -106,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                             .thenAccept(renderable -> {
                                 carRenderable = renderable;
                                 if (carNode != null) {
-                                    carNode.setRenderable(carRenderable); // reemplazar modelo visualmente
+                                    carNode.setRenderable(carRenderable);
                                     Toast.makeText(this, "Modelo actualizado", Toast.LENGTH_SHORT).show();
                                 }
                             })
@@ -118,7 +116,6 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .show();
     }
-
 
     private void loadModel() {
         ModelRenderable.builder()
@@ -132,5 +129,4 @@ public class MainActivity extends AppCompatActivity {
                     return null;
                 });
     }
-
 }
